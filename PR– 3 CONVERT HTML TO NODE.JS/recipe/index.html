@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <form action="" method="post" id="taskData">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="description">Description:</label>
+        <input type="text" id="description" name="description" required><br><br>
+
+        <label for="preparationTime">Preparation Time:</label>
+        <input type="number" id="preparationTime" name="preparationTime" required><br><br>
+
+        <label for="cookingTime">Cooking Time:</label>
+        <input type="number" id="cookingTime" name="cookingTime" required><br><br>
+
+        <label for="imageUrl">Image URL</label>
+        <input type="url" id="imageUrl" name="imageUrl" required><br><br>
+
+        <label for="country">Country:</label>
+        <input type="text" id="country" name="country" required><br><br>
+
+        <label for="veg">Is Vegetarian:</label>
+        <input type="radio" id="veg1" name="veg" value="Yes">
+        <label for="veg1">Yes</label>
+        <input type="radio" id="veg2" name="veg" value="No" checked>
+        <label for="veg2">No</label><br><br>
+
+        <input type="submit" value="Submit">
+    </form>
+    <div id="display"></div>
+
+    <script>
+      const postData = async (data) => {
+        let req = await fetch("http://localhost:8090/recipe/all", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data)
+        });
+        let response = await req.json();
+        console.log(response);
+        mapper(response);
+      };
+
+      const updateData = async (id, data) => {
+        let req = await fetch(`http://localhost:8090/recipe/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data)
+        });
+        let response = await req.json();
+        console.log(response);
+        mapper(response);
+      };
+
+      const deleteData = async (id) => {
+        let req = await fetch(`http://localhost:8090/recipe/${id}`, {
+          method: "DELETE"
+        });
+        let response = await req.json();
+        console.log(response);
+        mapper(response);
+      };
+
+      const handleData = (e) => {
+        e.preventDefault();
+        let data = {
+            name: document.getElementById('name').value,
+            description: document.getElementById('description').value,
+            preparationTime: document.getElementById('preparationTime').value + ' minutes',
+            cookingTime: document.getElementById('cookingTime').value + ' minutes',
+            imageUrl: document.getElementById('imageUrl').value,
+            country: document.getElementById('country').value,
+            veg: document.querySelector('input[name="veg"]:checked').value === "Yes"
+        };
+        postData(data);
+      };
+
+      document.getElementById("taskData").addEventListener("submit", handleData);
+
+      const mapper = (data) => {
+        document.getElementById("display").innerHTML = "";
+
+        data.map((ele) => {
+          let h1 = document.createElement("h1");
+          h1.innerHTML = ele.name;
+          let h2 = document.createElement("h2");
+          h2.innerHTML = ele.description;
+          let h3 = document.createElement("h3");
+          h3.innerHTML = ele.preparationTime;
+          let p = document.createElement("p");
+          p.innerHTML = ele.cookingTime;
+          let img = document.createElement("img");
+          img.src = ele.imageUrl;
+          let span = document.createElement("span");
+          span.innerHTML = ele.country;
+          let pa = document.createElement("p");
+          pa.innerHTML = ele.veg ? "Vegetarian" : "Non-Vegetarian";
+          let div = document.createElement("div");
+
+          let deletebtn = document.createElement("button");
+          deletebtn.innerHTML = "Delete";
+          deletebtn.addEventListener("click", () => deleteData(ele.id));
+
+          let updatebtn = document.createElement("button");
+          updatebtn.innerHTML = "Update";
+          updatebtn.addEventListener("click", () => {
+            const updatedData = {
+              name: prompt("Enter new name", ele.name),
+              description: prompt("Enter new description", ele.description),
+              preparationTime: prompt("Enter new preparation time", ele.preparationTime),
+              cookingTime: prompt("Enter new cooking time", ele.cookingTime),
+              imageUrl: prompt("Enter new image URL", ele.imageUrl),
+              country: prompt("Enter new country", ele.country),
+              veg: confirm("Is Vegetarian?") ? true : false
+            };
+            updateData(ele.id, updatedData);
+          });
+
+          div.append(h1, h2, h3, p, img, span, pa, deletebtn, updatebtn);
+
+          document.getElementById("display").append(div);
+        });
+      };
+
+      dis();
+    </script>
+  </body>
+</html>
